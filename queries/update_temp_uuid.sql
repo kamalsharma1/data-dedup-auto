@@ -1,0 +1,1 @@
+UPDATE  `BQ_TABLE_NAME` SET temp_dedup_v1 = GENERATE_UUID() where true
