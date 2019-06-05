@@ -14,3 +14,6 @@ Step1: Copy the `run.sh`, `data_delete_query.sql` and `delatable_records.sql` fi
 
 Step2: 
 `./run.sh [PROJECT-ID] [SOURCE_DATASET_NAME] [TARGET_DATASET_NAME] [TABLE_NAME]`
+
+### Info
+Backup tables are created in the [TARGET_DATASET_NAME] bigquery dataset.
