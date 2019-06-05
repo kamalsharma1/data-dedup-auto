@@ -19,15 +19,17 @@ declare -r TABLE_NAME=$4
 delatable_rows_query_file_name=queries/delatable_records.sql
 data_delete_query_file_name=queries/data_delete_query.sql
 
-delete_table_postfix=_deletable
-backup_table_postfix=_backup
+# backup data postfix
+backup_original_table_name_postfix=_backup
+backup_deletable_rows_table_name_postfix=_deletable
 
-backup_table_name=${PROJECT_ID}:${TARGET_DATASET_NAME}.${TABLE_NAME}${backup_table_postfix}
-deletable_table_name=${PROJECT_ID}:${TARGET_DATASET_NAME}.${TABLE_NAME}${delete_table_postfix}
+# full table name with project id, dataset and 
+backup_original_data_table_name=${PROJECT_ID}:${TARGET_DATASET_NAME}.${TABLE_NAME}${backup_original_table_name_postfix}
+backup_deletable_rows_table_name=${PROJECT_ID}:${TARGET_DATASET_NAME}.${TABLE_NAME}${backup_deletable_rows_table_name_postfix}
 
 # read table query from file
-deletable_rows_query=`cat "$delatable_rows_query_file_name"`
-data_delete_query=`cat "$data_delete_query_file_name"`
+deletable_rows_select_query=`cat "$delatable_rows_query_file_name"`
+duplicate_rows_delete_query=`cat "$data_delete_query_file_name"`
 
 # running the command
 function run(){
@@ -44,14 +46,14 @@ function replace_table_run(){
 }
 
 # Backup original table in new table-> creation of backup table 
-backup_table_cmd="bq cp ${PROJECT_ID}:${SOURCE_DATASET_NAME}.${TABLE_NAME} $backup_table_name"
+backup_table_cmd="bq cp ${PROJECT_ID}:${SOURCE_DATASET_NAME}.${TABLE_NAME} $backup_original_data_table_name"
 run "$backup_table_cmd"
 
 # Copy all deletable records in a backup table for deletable data
-copy_deletable_rows_cmd="bq query --destination_table $deletable_table_name --replace --use_legacy_sql=false '"$deletable_rows_query"'"
+copy_deletable_rows_cmd="bq query --destination_table $backup_deletable_rows_table_name --replace --use_legacy_sql=false '"$deletable_rows_select_query"'"
 replace_table_run "$copy_deletable_rows_cmd"
 
 # Delete all duplicate records
-delete_duplicate="bq query --use_legacy_sql=false '"$data_delete_query"'"
+delete_duplicate="bq query --use_legacy_sql=false '"$duplicate_rows_delete_query"'"
 replace_table_run "$delete_duplicate"
 
